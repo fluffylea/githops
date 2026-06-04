@@ -6,11 +6,11 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: foodtracker
+      app.kubernetes.io/name: foodtracker
   template:
     metadata:
       labels:
-        app: foodtracker
+        app.kubernetes.io/name: foodtracker
     spec:
       containers:
         - name: foodtracker
