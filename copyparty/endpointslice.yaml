@@ -1,0 +1,15 @@
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: files-service-endpoints
+  namespace: copyparty
+  labels:
+    kubernetes.io/service-name: files-service
+addressType: IPv4
+ports:
+  - name: http
+    protocol: TCP
+    port: 3923
+endpoints:
+  - addresses:
+      - "10.10.0.2"
