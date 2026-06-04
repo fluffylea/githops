@@ -1,0 +1,49 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: forgejo
+  namespace: kube-system
+spec:
+  chart: oci://code.forgejo.org/forgejo-helm/forgejo
+  targetNamespace: git
+  createNamespace: true
+  version: 17.1.0
+  valuesContent: |-
+    ingress:
+      enabled: true
+      annotations:
+        nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      className: nginx
+      hosts:
+        - host: git.becutewith.me
+          paths:
+            - path: /
+              pathType: Prefix
+              port: http
+    gitea:
+      admin:
+        username: gitea_admin
+        password: 'E9E74290-EEF0-4D96-A39F-54EC4BE68056'
+        email: 'admin@springer.dev'
+      
+      config:
+        server:
+          DISABLE_SSH: true
+          ROOT_URL: https://git.becutewith.me  # Change this to your actual domain
+        
+        service:
+          DISABLE_REGISTRATION: false
+          ALLOW_ONLY_EXTERNAL_REGISTRATION: true
+          REQUIRE_SIGNIN_VIEW: true
+          ENABLE_INTERNAL_SIGNIN: false
+        
+        oauth2_client:
+          ENABLE_AUTO_REGISTRATION: true
+          ACCOUNT_LINKING: auto
+        
+      oauth:
+        - name: 'Authentik'
+          provider: openidConnect
+          existingSecret: forgejo-oauth-authentik
+          autoDiscoverUrl: https://auth.becutewith.me/application/o/forgejo/.well-known/openid-configuration
+          scopes: 'openid profile email'
