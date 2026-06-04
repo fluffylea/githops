@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: forgejo-runner
+  namespace: forgejo-runner
+spec:
+  serviceName: forgejo-runner
+  replicas: 1
+  selector:
+    matchLabels:
+      app: forgejo-runner
+  template:
+    metadata:
+      labels:
+        app: forgejo-runner
+    spec:
+      hostname: docker
+
+      volumes:
+        - name: runner-data
+          persistentVolumeClaim:
+            claimName: forgejo-runner-data
+
+        - name: docker-certs
+          emptyDir: {}
+
+      initContainers:
+        - name: runner-register
+          image: data.forgejo.org/forgejo/runner:12.10.2
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: FORGEJO_INSTANCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: forgejo-runner-secret
+                  key: FORGEJO_INSTANCE_URL
+            - name: FORGEJO_RUNNER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: forgejo-runner-secret
+                  key: FORGEJO_RUNNER_TOKEN
+          volumeMounts:
+            - name: runner-data
+              mountPath: /data
+          workingDir: /data
+          command:
+            - bash
+            - -ec
+            - |
+              if [ -e config.yml ]; then
+                echo "config.yml already exists"
+                exit 0
+              fi
+
+              forgejo-runner generate-config > config.yml
+
+              sed -i -e "s|  level: info|  level: debug|" config.yml
+
+              sed -i -e 's|  labels: \[\]|  labels: ["docker-cli:docker://code.forgejo.org/oci/docker:cli", "act:docker://ghcr.io/catthehacker/ubuntu:act-latest", "node:docker://code.forgejo.org/oci/node:lts"]|' config.yml
+
+              sed -i -e "s|network: .*|network: host|" config.yml
+
+              sed -i -e "s|^  envs:$|  envs:\n    DOCKER_HOST: tcp://localhost:2376\n    DOCKER_TLS_VERIFY: 1\n    DOCKER_CERT_PATH: /certs/client|" config.yml
+
+              sed -i -e "s|^  options:|  options: -v /certs/client:/certs/client|" config.yml
+
+              sed -i -e "s|  valid_volumes: \[\]$|  valid_volumes:\n    - /certs/client|" config.yml
+
+              forgejo-runner register \
+                --no-interactive \
+                --instance "${FORGEJO_INSTANCE_URL}" \
+                --token "${FORGEJO_RUNNER_TOKEN}" \
+                --name "k8s-forgejo-runner" \
+                --config config.yml
+
+              chown -R 1000:1000 /data
+
+      containers:
+        - name: docker
+          image: data.forgejo.org/oci/docker:dind
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: /certs
+          ports:
+            - name: docker-tls
+              containerPort: 2376
+          volumeMounts:
+            - name: docker-certs
+              mountPath: /certs
+
+        - name: runner
+          image: data.forgejo.org/forgejo/runner:12.10.2
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DOCKER_HOST
+              value: tcp://localhost:2376
+            - name: DOCKER_CERT_PATH
+              value: /certs/client
+            - name: DOCKER_TLS_VERIFY
+              value: "0"
+          volumeMounts:
+            - name: runner-data
+              mountPath: /data
+            - name: docker-certs
+              mountPath: /certs
+          workingDir: /data
+          command:
+            - bash
+            - -ec
+            - |
+              echo "Waiting for Docker TLS certificates..."
+              until [ -f /certs/client/ca.pem ] && [ -f /certs/client/cert.pem ] && [ -f /certs/client/key.pem ]; do
+                sleep 1
+              done
+
+              echo "Waiting for Docker daemon..."
+              until timeout 1 bash -c '</dev/tcp/localhost/2376' 2>/dev/null; do
+                sleep 1
+              done
+
+              exec forgejo-runner --config config.yml daemon
