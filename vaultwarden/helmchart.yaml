@@ -1,0 +1,24 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: vaultwarden
+  namespace: kube-system
+spec:
+  chart: vaultwarden
+  createNamespace: true
+  repo: https://gissilabs.github.io/charts/
+  targetNamespace: vaultwarden
+  valuesContent: |
+    vaultwarden:
+      domain: https://vault.becutewith.me
+      allowSignups: false
+      admin:
+        enabled: true
+    ingress:
+      enabled: true
+      host: vault.becutewith.me
+      className: nginx
+    persistence:
+      enabled: true
+      size: 4Gi
+  version: "1.3.0"
