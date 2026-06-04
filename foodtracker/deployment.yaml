@@ -22,7 +22,7 @@ spec:
                 name: foodtracker-config
           ports:
             - containerPort: 3000
-              protocol: http
+              protocol: TCP
           volumeMounts:
             - name: foodtracker-data
               mountPath: /data
