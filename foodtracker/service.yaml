@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: foodtracker
+  namespace: foodtracker
+spec:
+  selector:
+    app.kubernetes.io/name: foodtracker
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http

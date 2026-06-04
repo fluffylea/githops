@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foodtracker
+  namespace: foodtracker
+spec:
+  selector:
+    matchLabels:
+      app: foodtracker
+  template:
+    metadata:
+      labels:
+        app: foodtracker
+    spec:
+      containers:
+        - name: foodtracker
+          image: ghcr.io/fluffylea/foodtracker/foodtracker:latest
+          envFrom:
+            - secretRef:
+                name: foodtracker-secret
+            - configMapRef:
+                name: foodtracker-config
+          ports:
+            - containerPort: 3000
+              protocol: http
+          volumeMounts:
+            - name: foodtracker-data
+              mountPath: /data
+      volumes:
+        - name: foodtracker-data
+          persistentVolumeClaim:
+            claimName: foodtracker-pvc
