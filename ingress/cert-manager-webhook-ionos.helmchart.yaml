@@ -1,0 +1,9 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: cert-manager-webhook-ionos
+  namespace: cert-manager
+spec:
+  repo: https://fabmade.github.io/cert-manager-webhook-ionos
+  chart: cert-manager-webhook-ionos
+  version: 1.2.2
