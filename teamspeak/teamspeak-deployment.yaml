@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: teamspeak
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: teamspeak-loadbalancer
+  namespace: teamspeak
+spec:
+  type: LoadBalancer
+  selector:
+    app: teamspeak
+  ports:
+    - name: voice
+      port: 9987
+      protocol: UDP
+      targetPort: 9987
+    - name: serverquery
+      port: 10011
+      protocol: TCP
+      targetPort: 10011
+    - name: file-transfer
+      port: 30033
+      protocol: TCP
+      targetPort: 30033
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teamspeak
+  namespace: teamspeak
+spec:
+  selector:
+    matchLabels:
+      app: teamspeak
+  template:
+    metadata:
+      labels:
+        app: teamspeak
+    spec:
+      containers:
+        - name: teamspeak
+          image: teamspeaksystems/teamspeak6-server:latest
+          env:
+            - name: TSSERVER_LICENSE_ACCEPTED
+              value: "accept"
+          ports:
+            - containerPort: 9987
+              protocol: UDP
+            - containerPort: 10011
+              protocol: TCP
+            - containerPort: 30033
+              protocol: TCP
+          volumeMounts:
+            - name: teamspeak-data
+              mountPath: /var/ts3server
+      volumes:
+        - name: teamspeak-data
+          persistentVolumeClaim:
+            claimName: teamspeak-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: teamspeak-pvc
+  namespace: teamspeak
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
