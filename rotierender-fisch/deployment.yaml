@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rotierender-fisch
+  namespace: rotierender-fisch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rotierender-fisch
+  template:
+    metadata:
+      labels:
+        app: rotierender-fisch
+    spec:
+      imagePullSecrets:
+        - name: registry-secret
+      containers:
+        - name: rotierender-fisch
+          image: git.becutewith.me/lea/rotierender-fisch:latest
+          ports:
+            - containerPort: 8080
