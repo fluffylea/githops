@@ -10,7 +10,7 @@ jobs:
   update-helm-versions:
     runs-on: act
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Set up tools
@@ -19,6 +19,8 @@ jobs:
           sudo apt-get install -y jq curl yq skopeo
       - name: Find and update HelmChart versions
         run: |
+          echo $(pwd) 
+          ls -la
           find . -name "*.yaml" -o -name "*.yml" | while read -r file; do
             echo "Processing file: $file"
             if yq eval -e 'select(.apiVersion == "helm.cattle.io/v1" and .kind == "HelmChart") | select(. != null)' "$file" &>/dev/null; then
