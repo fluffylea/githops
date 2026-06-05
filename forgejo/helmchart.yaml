@@ -41,6 +41,13 @@ spec:
           ENABLE_AUTO_REGISTRATION: true
           ACCOUNT_LINKING: auto
         
+        mailer:
+          ENABLED: true
+          FROM: forgejo@infra.becutewith.me
+          PROTOCOL: sendmail
+          SENDMAIL_PATH: /usr/sbin/sendmail
+          SENDMAIL_ARGS: "--"
+
       oauth:
         - name: 'Authentik'
           provider: openidConnect
