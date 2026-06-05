@@ -121,7 +121,8 @@ jobs:
               --arg body "$pr_body" \
               --arg head "$branch_name" \
               --arg base "$base_branch" \
-              '{title: $title, body: $body, head: $head, base: $base, assignee: ${{ github.repository_owner }}}')
+              --arg assignee "${{ github.repository_owner }}" \
+              '{title: $title, body: $body, head: $head, base: $base, assignee: $assignee}')
 
             pr_response=$(curl -fsSL -X POST \
               -H "Authorization: token $token" \
