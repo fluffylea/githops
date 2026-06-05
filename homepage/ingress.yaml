@@ -3,6 +3,8 @@ kind: Ingress
 metadata:
   name: homepage
   namespace: homepage
+  annotations:
+    nginx.org/websocket-services: "homepage"
 spec:
   ingressClassName: nginx
   rules:
