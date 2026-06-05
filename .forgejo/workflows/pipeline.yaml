@@ -56,10 +56,17 @@ jobs:
               fi
             fi
           done 3< <(find . \( -name "*.yaml" -o -name "*.yml" \))
+      
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v8
+        uses: https://github.com/maxking/forgejo-create-pr@main
         with:
+          # required
+          token: ${{ github.token }}
+          # optional
+          base: 'main'
+          add-paths: '.'
           commit-message: 'chore: update HelmChart versions'
-          title: 'Update HelmChart versions to latest'
-          body: 'Automated HelmChart version updates'
-          branch: 'update-helm-versions'
+          pr-title: 'Update HelmChart versions to latest'
+          pr-body: 'Automated HelmChart version updates'
+          pr-condition-cmd: 'git status --porcelain'
+          pr-branch: 'update-helm-versions'
