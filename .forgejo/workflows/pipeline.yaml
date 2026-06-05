@@ -1,0 +1,62 @@
+name: HelmChart Version Update
+on:
+  schedule:
+    - cron: '11 1 * * 5' # Every Friday at 01:11 AM
+  workflow_dispatch:
+jobs:
+  update-helm-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl yq
+      - name: Find and update HelmChart versions
+        run: |
+          find . -name "*.yaml" -o -name "*.yml" | while read -r file; do
+            echo "Processing file: $file"
+            if yq eval -e 'select(.apiVersion == "helm.cattle.io/v1" and .kind == "HelmChart") | select(. != null)' "$file" &>/dev/null; then
+              chart_name=$(yq eval '.metadata.name' "$file")
+              chart_repo=$(yq eval '.spec.repo' "$file")
+              chart_chart=$(yq eval '.spec.chart' "$file")
+              current_version=$(yq eval '.spec.version' "$file")
+              
+              if [ -n "$chart_repo" ] && [ -n "$chart_chart" ]; then
+                # Handle OCI repos
+                if [[ "$chart_chart" == oci://* ]]; then
+                  echo "  Checking OCI registry: $chart_chart"
+                  latest_version=$(skopeo list-tags "docker://${chart_chart#oci://}" 2>/dev/null | jq -r '.Tags[]' | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+                # Handle HTTP(S) repos
+                else
+                  echo "  Checking Helm repo: $chart_repo for chart: $chart_chart"
+                  if [[ "$chart_repo" == https://* ]] || [[ "$chart_repo" == http://* ]]; then
+                    echo "  Fetching index from: $chart_repo"
+                    index_url="$chart_repo/index.yaml"
+                    index=$(curl -s "$index_url")
+                    latest_version=$(echo "$index" | yq eval ".entries.\"$chart_chart\"[] | select(.version | test(\"^[0-9]+\\\\.[0-9]+\\\\.[0-9]+$\") | not | . == false) | .version" - | sort -V | tail -1)
+                    if [ -z "$latest_version" ] || [ "$latest_version" == "null" ]; then
+                      latest_version=$(echo "$index" | yq eval ".entries.\"$chart_chart\"[0].version" -)
+                    fi
+                  fi
+                fi
+                
+                if [ -n "$latest_version" ] && [ "$latest_version" != "$current_version" ] && [ "$latest_version" != "null" ]; then
+                  echo "  Latest version: $latest_version"
+                  sed -i '' "s|  version:.*|  version: $latest_version|" "$file"
+                  echo "  Updated to: $latest_version"
+                else
+                  echo "  No update needed (latest: $latest_version)"
+                fi
+              fi
+            fi
+          done
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: 'chore: update HelmChart versions'
+          title: 'Update HelmChart versions to latest'
+          body: 'Automated HelmChart version updates'
+          branch: 'update-helm-versions'
