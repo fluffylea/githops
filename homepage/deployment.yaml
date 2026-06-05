@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homepage
+  namespace: homepage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: homepage
+  template:
+    metadata:
+      labels:
+        app: homepage
+    spec:
+      imagePullSecrets:
+        - name: registry-secret
+      containers:
+        - name: homepage
+          image: git.becutewith.me/lea/website2.0:0.0.2
+          ports:
+            - containerPort: 4001
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: app-secret
