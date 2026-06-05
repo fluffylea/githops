@@ -3,9 +3,12 @@ on:
   schedule:
     - cron: '11 1 * * 5' # Every Friday at 01:11 AM
   workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
 jobs:
   update-helm-versions:
-    runs-on: ubuntu-latest
+    runs-on: act
     steps:
       - uses: actions/checkout@v4
         with:
@@ -13,7 +16,7 @@ jobs:
       - name: Set up tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq curl yq
+          sudo apt-get install -y jq curl yq skopeo
       - name: Find and update HelmChart versions
         run: |
           find . -name "*.yaml" -o -name "*.yml" | while read -r file; do
