@@ -11,17 +11,15 @@ jobs:
     runs-on: act
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
       - name: Set up tools
         run: |
           sudo apt-get update
           sudo apt-get install -y jq curl yq skopeo
       - name: Find and update HelmChart versions
         run: |
-          echo $(pwd) 
-          ls -la
-          find . -name "*.yaml" -o -name "*.yml" | while read -r file; do
+          set -x
+
+          while read -r file; do
             echo "Processing file: $file"
             if yq eval -e 'select(.apiVersion == "helm.cattle.io/v1" and .kind == "HelmChart") | select(. != null)' "$file" &>/dev/null; then
               chart_name=$(yq eval '.metadata.name' "$file")
@@ -50,14 +48,14 @@ jobs:
                 
                 if [ -n "$latest_version" ] && [ "$latest_version" != "$current_version" ] && [ "$latest_version" != "null" ]; then
                   echo "  Latest version: $latest_version"
-                  sed -i '' "s|  version:.*|  version: $latest_version|" "$file"
+                  sed -i "s|  version:.*|  version: $latest_version|" "$file"
                   echo "  Updated to: $latest_version"
                 else
                   echo "  No update needed (latest: $latest_version)"
                 fi
               fi
             fi
-          done
+          done < <(find . \( -name "*.yaml" -o -name "*.yml" \))
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
