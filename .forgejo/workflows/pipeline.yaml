@@ -19,7 +19,7 @@ jobs:
         run: |
           set -x
 
-          while read -r file; do
+          while read -r file <&3; do
             echo "Processing file: $file"
             if yq eval -e 'select(.apiVersion == "helm.cattle.io/v1" and .kind == "HelmChart") | select(. != null)' "$file" &>/dev/null; then
               chart_name=$(yq eval '.metadata.name' "$file")
@@ -55,7 +55,7 @@ jobs:
                 fi
               fi
             fi
-          done < <(find . \( -name "*.yaml" -o -name "*.yml" \))
+          done 3< <(find . \( -name "*.yaml" -o -name "*.yml" \))
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
