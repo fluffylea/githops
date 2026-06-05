@@ -6,3 +6,4 @@ metadata:
 data:
   PORT: "4001"
   PHX_HOST: "www.becutewith.me"
+  DATABASE_PATH: "/data/homepage.db"

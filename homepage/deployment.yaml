@@ -25,3 +25,10 @@ spec:
                 name: app-config
             - secretRef:
                 name: app-secret
+          volumeMounts:
+            - name: homepage-data
+              mountPath: /data
+      volumes:
+        - name: homepage-data
+          persistentVolumeClaim:
+            claimName: homepage-pvc
