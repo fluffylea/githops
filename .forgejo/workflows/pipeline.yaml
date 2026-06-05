@@ -14,11 +14,11 @@ jobs:
       - name: Set up tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq curl yq skopeo
+          sudo apt-get install -y jq curl skopeo
+          wget https://github.com/mikefarah/yq/releases/download/v4.53.2/yq_linux_amd64 -O /usr/local/bin/yq
+          chmod +x /usr/local/bin/yq
       - name: Find and update HelmChart versions
         run: |
-          set -x
-
           while read -r file <&3; do
             echo "Processing file: $file"
             if yq eval -e 'select(.apiVersion == "helm.cattle.io/v1" and .kind == "HelmChart") | select(. != null)' "$file" &>/dev/null; then
