@@ -16,6 +16,14 @@ spec:
           namespace: gateway
       hostnames:
         - git.becutewith.me
+    ingress:
+      enabled: true
+      hosts:
+        - host: git.becutewith.me
+          paths:
+            - path: /
+              pathType: Prefix
+              port: http
 
     gitea:
       admin:
