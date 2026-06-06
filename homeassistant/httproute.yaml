@@ -1,0 +1,23 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  annotations:
+    gateway.networking.k8s.io/generator: ingress2gateway-1.1.0
+  name: homeassistant-ingress-homeassistant-becutewith-me
+  namespace: homeassistant
+spec:
+  hostnames:
+  - homeassistant.becutewith.me
+  parentRefs:
+  - name: gateway
+    namespace: gateway
+  rules:
+  - backendRefs:
+    - name: homeassistant-service
+      port: 8123
+    matches:
+    - path:
+        type: PathPrefix
+        value: /
+status:
+  parents: []

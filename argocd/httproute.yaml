@@ -1,0 +1,23 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  annotations:
+    gateway.networking.k8s.io/generator: ingress2gateway-1.1.0
+  name: argocd-server-ingress-argocd-becutewith-me
+  namespace: argocd
+spec:
+  hostnames:
+  - argocd.becutewith.me
+  parentRefs:
+  - name: gateway
+    namespace: gateway
+  rules:
+  - backendRefs:
+    - name: argocd-server
+      port: 443
+    matches:
+    - path:
+        type: PathPrefix
+        value: /
+status:
+  parents: []

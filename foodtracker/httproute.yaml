@@ -1,0 +1,23 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  annotations:
+    gateway.networking.k8s.io/generator: ingress2gateway-1.1.0
+  name: foodtracker-foodtracker-becutewith-me
+  namespace: foodtracker
+spec:
+  hostnames:
+  - foodtracker.becutewith.me
+  parentRefs:
+  - name: gateway
+    namespace: gateway
+  rules:
+  - backendRefs:
+    - name: foodtracker
+      port: 3000
+    matches:
+    - path:
+        type: PathPrefix
+        value: /
+status:
+  parents: []

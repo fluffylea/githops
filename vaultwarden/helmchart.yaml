@@ -14,10 +14,6 @@ spec:
       allowSignups: false
       admin:
         enabled: true
-    ingress:
-      enabled: true
-      host: vault.becutewith.me
-      className: nginx
     persistence:
       enabled: true
       size: 4Gi

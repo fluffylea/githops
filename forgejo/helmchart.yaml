@@ -9,17 +9,14 @@ spec:
   createNamespace: true
   version: 17.1.0
   valuesContent: |-
-    ingress:
+    httpRoute:
       enabled: true
-      annotations:
-        nginx.ingress.kubernetes.io/proxy-body-size: "0"
-      className: nginx
-      hosts:
-        - host: git.becutewith.me
-          paths:
-            - path: /
-              pathType: Prefix
-              port: http
+      parentRefs:
+        - name: gateway
+          namespace: gateway
+      hostnames:
+        - git.becutewith.me
+
     gitea:
       admin:
         username: gitea_admin

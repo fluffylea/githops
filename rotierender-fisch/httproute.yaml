@@ -1,0 +1,23 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  annotations:
+    gateway.networking.k8s.io/generator: ingress2gateway-1.1.0
+  name: rotierender-fisch-rotierenderfis-ch
+  namespace: rotierender-fisch
+spec:
+  hostnames:
+  - rotierenderfis.ch
+  parentRefs:
+  - name: gateway
+    namespace: gateway
+  rules:
+  - backendRefs:
+    - name: rotierender-fisch
+      port: 80
+    matches:
+    - path:
+        type: PathPrefix
+        value: /
+status:
+  parents: []

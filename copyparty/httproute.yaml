@@ -1,0 +1,23 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  annotations:
+    gateway.networking.k8s.io/generator: ingress2gateway-1.1.0
+  name: files-ingress-files-becutewith-me
+  namespace: copyparty
+spec:
+  hostnames:
+  - files.becutewith.me
+  parentRefs:
+  - name: gateway
+    namespace: gateway
+  rules:
+  - backendRefs:
+    - name: files-service
+      port: 3923
+    matches:
+    - path:
+        type: PathPrefix
+        value: /
+status:
+  parents: []
