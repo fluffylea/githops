@@ -12,9 +12,19 @@ spec:
   - name: gateway
     namespace: gateway
   rules:
-  - backendRefs:
+  - filters:
+    - type: RequestHeaderModifier
+      requestHeaderModifier:
+        set:
+        - name: X-Forwarded-Proto
+          value: https
+        - name: X-Forwarded-Port
+          value: "443"
+        - name: X-Forwarded-Host
+          value: argocd.becutewith.me
+    backendRefs:
     - name: argocd-server
-      port: 443
+      port: 80
     matches:
     - path:
         type: PathPrefix
