@@ -8,7 +8,7 @@ metadata:
 spec:
   gatewayClassName: nginx
   listeners:
-  - name: https
+  - name: becutewith-me-wildcard
     protocol: HTTPS
     hostname: "*.becutewith.me"
     port: 443
@@ -21,7 +21,7 @@ spec:
     allowedRoutes:
       namespaces:
         from: All
-  - name: https
+  - name: becutewith-me-root
     protocol: HTTPS
     hostname: "becutewith.me"
     port: 443
@@ -34,7 +34,7 @@ spec:
     allowedRoutes:
       namespaces:
         from: All
-  - name: https
+  - name: rotierenderfis-ch
     protocol: HTTPS
     hostname: "rotierenderfis.ch"
     port: 443
@@ -46,7 +46,7 @@ spec:
     allowedRoutes:
       namespaces:
         from: All
-  - name: https
+  - name: status-wolfyja-de
     protocol: HTTPS
     hostname: "status.wolfyja.de"
     port: 443
